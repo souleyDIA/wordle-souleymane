@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+    .flash {
+        animation: flash 0.5s infinite;
+    }
+    @keyframes flash {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.1; }
+    }
+}
+
+
+/* Add the following CSS in your stylesheets or in a custom Tailwind CSS configuration file */
+
+/* Animation for the pulse effect */
+@keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+  
+  /* Styling for the bar */
+  .w-16 {
+    width: 4rem;
+  }
+  
+  .h-4 {
+    height: 1rem;
+  }
+  
+  .bg-green-500 {
+    background-color: #04c37d;
+  }
+  
+  .rounded-full {
+    border-radius: 9999px;
+  }
