@@ -1,44 +1,38 @@
 import { useState, useEffect, useCallback } from "react";
 import { ALPHABET } from "../../utils/constants";
-import fetchRandomWord from "../../utils/api/wordApi";
-import { useAttempts } from "./useAttempts";
-import {
-  isValidGuessWord,
-  checkWordValidity,
-  initializeGameBoard,
-} from "../../utils/gameHelpers";
+import { isValidGuessWord, checkWordValidity } from "../../utils/gameHelpers";
+import { useWordManagement } from "./useWordManagement";
+import { useGameBoardManagement } from "./useGameBoardManagement";
+import { useGameStatus } from "./useGameStatus";
 
 export const useGameState = (initialStats) => {
   const keyboard = ALPHABET;
 
-  const [gameBoard, setGameBoard] = useState(initializeGameBoard());
-  const { attemptsLeft, decrementAttempts, resetAttempts } = useAttempts();
-  const [currentWord, setCurrentWord] = useState("");
   const [currentLine, setCurrentLine] = useState(0);
-  const [selectedBox, setSelectedBox] = useState({ line: 0, letterIndex: 0 });
   const [guessedLetters, setGuessedLetters] = useState([]);
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const [showModal, setShowModal] = useState(false);
   const [gameWon, setGameWon] = useState(false);
   const [lose, setLose] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [userStats, setUserStats] = useState(initialStats);
-  const [showModal, setShowModal] = useState(false);
 
-  useEffect(() => {
-    const initializeGame = async () => {
-      setIsLoading(true);
-      try {
-        const randomWord = await fetchRandomWord();
-        setCurrentWord(randomWord);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Failed to initialize game:", error);
-        setIsLoading(false);
-      }
-    };
+  const { currentWord, isLoading } = useWordManagement();
 
-    initializeGame();
-  }, []);
+  const {
+    gameBoard,
+    setGameBoard,
+    attemptsLeft,
+    decrementAttempts,
+    selectedBox,
+    setSelectedBox,
+    resetGameBoard,
+  } = useGameBoardManagement();
+
+  const { userStats, handleWin, handleLose, resetUserStats } = useGameStatus(
+    initialStats,
+    currentLine,
+    currentWord
+  );
 
   const handleLetterClick = useCallback(
     (letter) => {
@@ -57,7 +51,15 @@ export const useGameState = (initialStats) => {
         letterIndex: prevBox.letterIndex + 1 < 5 ? prevBox.letterIndex + 1 : 0,
       }));
     },
-    [attemptsLeft, isSubmitted, gameBoard, currentLine, selectedBox]
+    [
+      attemptsLeft,
+      isSubmitted,
+      gameBoard,
+      currentLine,
+      selectedBox,
+      setGameBoard,
+      setSelectedBox,
+    ]
   );
 
   const handleResetClick = useCallback(() => {
@@ -74,7 +76,15 @@ export const useGameState = (initialStats) => {
       line: currentLine,
       letterIndex: newLetterIndex,
     });
-  }, [attemptsLeft, isSubmitted, gameBoard, currentLine, selectedBox]);
+  }, [
+    attemptsLeft,
+    isSubmitted,
+    gameBoard,
+    currentLine,
+    selectedBox,
+    setGameBoard,
+    setSelectedBox,
+  ]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const resetCurrentLineLetters = () => {
@@ -100,17 +110,7 @@ export const useGameState = (initialStats) => {
     setGameBoard(newGameBoard);
     setCurrentLine(0);
     setSelectedBox({ line: 0, letterIndex: 0 });
-  }, []);
-
-  const handleWin = useCallback(() => {
-    setUserStats((prevStats) => ({
-      ...prevStats,
-      linePerformance: prevStats.linePerformance.map((value, index) =>
-        index === currentLine ? value + 1 : value
-      ),
-      lastWord: currentWord,
-    }));
-  }, [currentLine, currentWord, setUserStats]);
+  }, [setGameBoard, setSelectedBox]);
 
   const getCurrentGuessWord = useCallback(() => {
     return gameBoard[currentLine].letters
@@ -160,6 +160,7 @@ export const useGameState = (initialStats) => {
   }, [
     currentLine,
     currentWord,
+    setGameBoard,
     decrementAttempts,
     handleWin,
     setIsSubmitted,
@@ -194,6 +195,7 @@ export const useGameState = (initialStats) => {
   }, [
     currentLine,
     gameWon,
+    setSelectedBox,
     canSubmitGuess,
     getCurrentGuessWord,
     resetCurrentLineLetters,
@@ -209,21 +211,15 @@ export const useGameState = (initialStats) => {
     setCurrentLine(currentLine + 1);
     setSelectedBox({ line: currentLine + 1, letterIndex: 0 });
     await submitGuess();
-  }, [attemptsLeft, isSubmitted, gameBoard, currentLine, submitGuess]);
-
-  // Update the user's stats when the game is lost
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const handleLose = useCallback(() => {
-    setUserStats((prevStats) => ({
-      ...prevStats,
-      totalGames: prevStats.totalGames + 1,
-      currentStreak: 0,
-      linePerformance: prevStats.linePerformance.map((value, index) =>
-        index === 5 ? value + 1 : value
-      ),
-      lastWord: currentWord,
-    }));
-  }, [currentWord]);
+  }, [
+    attemptsLeft,
+    setGameBoard,
+    isSubmitted,
+    gameBoard,
+    setSelectedBox,
+    currentLine,
+    submitGuess,
+  ]);
 
   useEffect(() => {
     if (attemptsLeft === 0 && !gameWon && !lose) {
@@ -256,36 +252,15 @@ export const useGameState = (initialStats) => {
   };
 
   const resetGame = useCallback(async () => {
-    // Fetch a new word and use it to start a new game
-    setIsLoading(true);
-    try {
-      const randomWord = await fetchRandomWord();
-      setCurrentWord(randomWord);
-      setIsLoading(false);
-    } catch (error) {
-      console.error("Failed to fetch a new word for the game:", error);
-      setIsLoading(false);
-    }
-
-    setGameBoard(
-      Array.from({ length: 6 }, () => ({
-        letters: Array.from({ length: 5 }, () => ({
-          letter: "",
-          isSelected: false,
-        })),
-        isSubmitted: false,
-      }))
-    );
-    resetAttempts();
+    // Fetch a new word internally within useWordManagement
+    await resetGameBoard(); // This should internally reset the game board and attempts
     setCurrentLine(0);
-    setSelectedBox({ line: 0, letterIndex: 0 });
     setGuessedLetters([]);
     setIsSubmitted(false);
     setGameWon(false);
     setLose(false);
-    setShowModal(false);
-    setUserStats(initialStats);
-  }, [initialStats, resetAttempts]);
+    resetUserStats();
+  }, [resetGameBoard, resetUserStats]);
 
   return {
     keyboard,
