@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 
 const LetterBox = ({
   letterObj,
@@ -21,18 +21,18 @@ const LetterBox = ({
 
   const getLetterBoxStyle = () => {
     if (!isSubmitted) {
-      return 'border border-gray-300';
+      return "border border-gray-300";
     }
 
     switch (letterObj.status) {
-      case 'correct':
-        return 'bg-green-500 text-white';
-      case 'wrong-position':
-        return 'bg-yellow-500 text-white';
-      case 'incorrect':
-        return 'bg-gray-300 text-white';
+      case "correct":
+        return "bg-green-500 text-white";
+      case "wrong-position":
+        return "bg-yellow-500 text-white";
+      case "incorrect":
+        return "bg-gray-300 text-white";
       default:
-        return '';
+        return "";
     }
   };
 
@@ -40,13 +40,13 @@ const LetterBox = ({
     <div
       className={`w-12 h-12 flex items-center justify-center text-lg rounded-md
                         ${getLetterBoxStyle()} ${
-        isRotating ? 'animate-rotateY' : ''
+        isRotating ? "animate-rotateY" : ""
       } 
                         ${
                           selectedBox?.letterIndex === colIndex &&
                           selectedBox?.line === rowIndex
-                            ? 'border-2 border-blue-500'
-                            : ''
+                            ? "border-2 border-blue-500"
+                            : ""
                         }`}
     >
       {letterObj.letter}
