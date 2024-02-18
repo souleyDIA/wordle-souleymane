@@ -86,7 +86,6 @@ export const useGameState = (initialStats) => {
     setSelectedBox,
   ]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const resetCurrentLineLetters = () => {
     setGameBoard((prevBoard) => {
       const newBoard = JSON.parse(JSON.stringify(prevBoard));
