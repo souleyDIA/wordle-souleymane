@@ -1,5 +1,5 @@
-import React from 'react';
-import LetterBox from './LetterBox';
+import React from "react";
+import LetterBox from "./LetterBox";
 
 const WordLine = ({ guess, isSubmitted, selectedBox, rowIndex }) => {
   return (
