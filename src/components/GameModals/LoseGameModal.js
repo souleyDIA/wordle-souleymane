@@ -1,22 +1,22 @@
-import React from 'react';
+import React from "react";
 
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 
-const WinGameModal = ({ resetGame, userStats, closeModal }) => {
-  const backdrop = {
-    visible: { opacity: 1 },
-    hidden: { opacity: 0 },
-  };
+const backdrop = {
+  visible: { opacity: 1 },
+  hidden: { opacity: 0 },
+};
 
-  const modal = {
-    hidden: { y: '-100vh', opacity: 0 },
-    visible: {
-      y: '200px',
-      opacity: 1,
-      transition: { delay: 0.5 },
-    },
-  };
+const modal = {
+  hidden: { y: "-100vh", opacity: 0 },
+  visible: {
+    y: "200px",
+    opacity: 1,
+    transition: { delay: 0.5 },
+  },
+};
 
+const LoseGameModal = ({ resetGame, userStats, closeModal }) => {
   return (
     <motion.div
       key={userStats.lastWord}
@@ -33,46 +33,42 @@ const WinGameModal = ({ resetGame, userStats, closeModal }) => {
           <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div className="sm:flex sm:items-start">
               <iframe
-                title="win-game-gif"
-                src="https://giphy.com/embed/cUKAiUSdzWEs8Zxkia"
+                title="lose-game-gif"
+                src="https://giphy.com/embed/JrTE30mpju51wByc6A"
                 width="180"
                 height="180"
                 className="giphy-embed"
               ></iframe>
               <p>
-                <a href="https://giphy.com/gifs/snowfallfx-cheers-winning-to-wars-cUKAiUSdzWEs8Zxkia" />
-              </p>{' '}
+                <a href="https://giphy.com/gifs/snowfallfx-fx-snowfall-networks-JrTE30mpju51wByc6A" />
+              </p>
               <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                 <h3
                   className="text-lg leading-6 font-medium text-gray-900"
                   id="modal-title"
                 >
-                  Congratulations! You won the game!
+                  Aouchh! You lost the game!
                 </h3>
                 <p>
-                  The word was indeed:
+                  The word was:
                   <span className="font-semibold">{userStats.lastWord}</span>
                 </p>
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">
-                    Performance per line:
-                  </h3>
-                  {userStats.linePerformance.map((value, index) => (
-                    <div key={index} className="flex items-center mb-2">
-                      <p className="mr-2">
-                        Line {index + 1}: {value === 2 ? value - 1 : value}
-                      </p>
-                      {value === 2 && (
-                        <div className="flex items-center">
-                          <div className="w-40 h-4 bg-green-600 rounded-full relative"></div>
-                        </div>
-                      )}
-                      <div>
-                        <img src="../assets/css/reaper.png" alt="" />
+                <h3>Performance per line:</h3>
+                {userStats.linePerformance.map((value, index) => (
+                  <div key={index} className="flex items-center mb-2">
+                    <p className="mr-2">
+                      Line {index + 1}: {value === 1 ? value - 1 : value}
+                    </p>
+                    {value === 1 && (
+                      <div className="flex items-center">
+                        <div className="w-40 h-4 bg-red-600 rounded-full relative"></div>
                       </div>
+                    )}
+                    <div>
+                      <img src="../assets/css/reaper.png" alt="" />
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
                 <div className="mt-2">
                   <p className="text-sm text-gray-500">
                     Would you like to play again?
@@ -103,4 +99,4 @@ const WinGameModal = ({ resetGame, userStats, closeModal }) => {
   );
 };
 
-export default WinGameModal;
+export default LoseGameModal;
