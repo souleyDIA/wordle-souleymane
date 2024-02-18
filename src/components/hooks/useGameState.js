@@ -1,22 +1,19 @@
 import { useState, useEffect, useCallback } from "react";
 import { ALPHABET } from "../../utils/constants";
 import fetchRandomWord from "../../utils/api/wordApi";
+import { useAttempts } from "./useAttempts";
+import {
+  isValidGuessWord,
+  checkWordValidity,
+  initializeGameBoard,
+} from "../../utils/gameHelpers";
 
 export const useGameState = (initialStats) => {
   const keyboard = ALPHABET;
 
-  const [gameBoard, setGameBoard] = useState(
-    Array.from({ length: 6 }, () => ({
-      letters: Array.from({ length: 5 }, () => ({
-        letter: "",
-        isSelected: false,
-      })),
-      isSubmitted: false,
-    }))
-  );
-
+  const [gameBoard, setGameBoard] = useState(initializeGameBoard());
+  const { attemptsLeft, decrementAttempts, resetAttempts } = useAttempts();
   const [currentWord, setCurrentWord] = useState("");
-  const [attemptsLeft, setAttemptsLeft] = useState(6);
   const [currentLine, setCurrentLine] = useState(0);
   const [selectedBox, setSelectedBox] = useState({ line: 0, letterIndex: 0 });
   const [guessedLetters, setGuessedLetters] = useState([]);
@@ -125,22 +122,6 @@ export const useGameState = (initialStats) => {
     return !(isLoading || isSubmitted);
   }, [isLoading, isSubmitted]);
 
-  function isValidGuessWord(word) {
-    if (word.length < 5) {
-      alert("Please enter a word with 5 letters.");
-      return false;
-    }
-    return true;
-  }
-
-  async function checkWordValidity(word) {
-    const response = await fetch(
-      `https://api.wordnik.com/v4/word.json/${word}/definitions?limit=1&includeRelated=false&useCanonical=false&includeTags=false&api_key=${process.env.REACT_APP_WORDNIK_API_KEY}`
-    );
-    const data = await response.json();
-    return data.length !== 0;
-  }
-
   const updateGameStateAfterValidGuess = useCallback(() => {
     setGameBoard((prevBoard) => {
       const newBoard = JSON.parse(JSON.stringify(prevBoard));
@@ -172,17 +153,17 @@ export const useGameState = (initialStats) => {
 
       // Advance to the next line and decrement attempts left
       setCurrentLine((currentLine) => currentLine + 1);
-      setAttemptsLeft((attemptsLeft) => attemptsLeft - 1);
+      decrementAttempts();
 
       return newBoard;
     });
   }, [
     currentLine,
     currentWord,
+    decrementAttempts,
     handleWin,
     setIsSubmitted,
     setCurrentLine,
-    setAttemptsLeft,
   ]);
 
   const submitGuess = useCallback(async () => {
@@ -295,7 +276,7 @@ export const useGameState = (initialStats) => {
         isSubmitted: false,
       }))
     );
-    setAttemptsLeft(6);
+    resetAttempts();
     setCurrentLine(0);
     setSelectedBox({ line: 0, letterIndex: 0 });
     setGuessedLetters([]);
@@ -304,7 +285,7 @@ export const useGameState = (initialStats) => {
     setLose(false);
     setShowModal(false);
     setUserStats(initialStats);
-  }, [initialStats]);
+  }, [initialStats, resetAttempts]);
 
   return {
     keyboard,
